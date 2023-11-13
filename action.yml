@@ -1,0 +1,24 @@
+name: 'Upload to Edge Add-ons'
+description: 'Publishes an updated version of a Web Extension to Microsoft Edge Add-ons store'
+inputs:
+  access_token_url:
+    description: The access token URL from https://partner.microsoft.com/en-us/dashboard/microsoftedge/publishapi
+    required: true
+  addon_file:
+    description: Path to the addon file relative to `$GITHUB_WORKSPACE`.
+    required: true
+  client_id:
+    description: The client ID listed at https://partner.microsoft.com/en-us/dashboard/microsoftedge/publishapi
+    required: true
+  client_secret:
+    description: A secret generated from https://partner.microsoft.com/en-us/dashboard/microsoftedge/publishapi
+    required: true
+  product_id:
+    description: The product ID listed under the "Extension identity" section of the Partner Center dashboard
+    required: true
+  notes:
+    description: Extra notes for certification. The format of this field is unclear.
+    required: false
+runs:
+  using: node20
+  main: dist/index.js

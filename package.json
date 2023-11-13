@@ -1,0 +1,31 @@
+{
+  "name": "edge-addon-upload",
+  "version": "0.0.1",
+  "private": true,
+  "description": "GitHub action to upload a new version of a Web Extension to the Edge Add-ons Store",
+  "main": "dist/index.js",
+  "repository": "https://github.com/birchill/edge-addon-upload/",
+  "author": "Brian Birtles <birtles@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@actions/core": "1.10.1"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "9.0.5",
+    "@types/node": "20.9.0",
+    "@types/utf8": "3.0.3",
+    "esbuild": "0.19.5",
+    "husky": "8.0.3",
+    "prettier": "3.0.3",
+    "typescript": "5.2.2"
+  },
+  "scripts": {
+    "build": "tsc",
+    "format": "prettier --write index.js",
+    "format-check": "prettier --check index.js",
+    "package": "esbuild index.js --outfile=dist/index.js --bundle --platform=node --target=node20 --format=esm --banner:js=\"import {createRequire} from 'module'; const require=createRequire(import.meta.url);\"",
+    "all": "yarn build && yarn format && yarn package",
+    "postinstall": "husky install"
+  }
+}
