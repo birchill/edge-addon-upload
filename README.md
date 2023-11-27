@@ -1,7 +1,7 @@
-# amo-upload
+# edge-addon-upload
 
-GitHub Action to upload a new Web Extension package to Microsoft Edge Add-ons
-store.
+GitHub Action to upload a Web Extension package to the
+Microsoft Edge Add-ons store.
 
 ## Usage
 
