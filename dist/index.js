@@ -18514,11 +18514,13 @@ async function main() {
   const clientId = core.getInput("client_id", { required: true });
   const clientSecret = core.getInput("client_secret", { required: true });
   const productId = core.getInput("product_id", { required: true });
+  core.info("Getting access token...");
   const accessToken = await getAccessToken({
     accessTokenUrl,
     clientId,
     clientSecret
   });
+  core.info("Uploading add-on...");
   const uploadOperationId = await upload({
     accessToken,
     file: (
@@ -18536,6 +18538,7 @@ async function main() {
     operationId: uploadOperationId,
     productId
   });
+  core.info("Publishing new version...");
   const publishOperationId = await publish({
     accessToken,
     productId,

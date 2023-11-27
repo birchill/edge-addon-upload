@@ -31,12 +31,16 @@ async function main() {
   const clientSecret = core.getInput('client_secret', { required: true });
   const productId = core.getInput('product_id', { required: true });
 
+  core.info('Getting access token...');
+
   // Get the access token
   const accessToken = await getAccessToken({
     accessTokenUrl,
     clientId,
     clientSecret,
   });
+
+  core.info('Uploading add-on...');
 
   // Upload the add-on asset
   const uploadOperationId = await upload({
@@ -57,6 +61,8 @@ async function main() {
     operationId: uploadOperationId,
     productId,
   });
+
+  core.info('Publishing new version...');
 
   // Publish the new version
   const publishOperationId = await publish({
