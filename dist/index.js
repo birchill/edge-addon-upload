@@ -18613,7 +18613,7 @@ async function waitForOperation({
     });
     const status = (
       /** @type OperationStatus */
-      JSON.parse(await res.json())
+      await res.json()
     );
     if (status.status === "Failed") {
       console.log(status);

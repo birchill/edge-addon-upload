@@ -248,7 +248,7 @@ async function waitForOperation({
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 
-    const status = /** @type OperationStatus */ JSON.parse(await res.json());
+    const status = /** @type OperationStatus */ await res.json();
     if (status.status === 'Failed') {
       console.log(status);
       throw new Error(
