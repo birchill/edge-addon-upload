@@ -1,5 +1,8 @@
 name: 'Upload to Edge Add-ons'
 description: 'Publishes an updated version of a Web Extension to Microsoft Edge Add-ons store'
+branding:
+  icon: 'upload-cloud'
+  color: 'blue'
 inputs:
   access_token_url:
     description: The access token URL from https://partner.microsoft.com/en-us/dashboard/microsoftedge/publishapi
