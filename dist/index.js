@@ -18560,6 +18560,8 @@ async function upload({ accessToken, file, productId }) {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/zip"
       },
+      // @ts-expect-error
+      duplex: "half",
       method: "POST",
       body: file
     }
