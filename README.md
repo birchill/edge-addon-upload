@@ -25,17 +25,14 @@ See [action.yml](action.yml)
 
 ## Inputs
 
-- `access_token_url` (required) - The access token URL from
-  https://partner.microsoft.com/en-us/dashboard/microsoftedge/publishapi
-
 - `addon_file` (required) - The filename of the addon asset relative to
   `$GITHUB_WORKSPACE`.
 
-- `client_id` (required) - The client ID listed at
-  https://partner.microsoft.com/en-us/dashboard/microsoftedge/publishapi
+- `api_key` (required) - An API key from
+  https://partner.microsoft.com/dashboard/microsoftedge/publishapi
 
-- `client_secret` (required) - A secret generated from
-  https://partner.microsoft.com/en-us/dashboard/microsoftedge/publishapi
+- `client_id` (required) - The client ID listed at
+  https://partner.microsoft.com/dashboard/microsoftedge/publishapi
 
 - `product_id` (required) - The product ID listed under the "Extension identity"
   section of the Partner Center dashboard

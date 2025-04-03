@@ -26,25 +26,16 @@ async function main() {
   core.info(`Found add-on file: ${addonFile}`);
 
   // Validate other inputs
-  const accessTokenUrl = core.getInput('access_token_url', { required: true });
+  const apiKey = core.getInput('api_key', { required: true });
   const clientId = core.getInput('client_id', { required: true });
-  const clientSecret = core.getInput('client_secret', { required: true });
   const productId = core.getInput('product_id', { required: true });
-
-  core.info('Getting access token...');
-
-  // Get the access token
-  const accessToken = await getAccessToken({
-    accessTokenUrl,
-    clientId,
-    clientSecret,
-  });
 
   core.info('Uploading add-on...');
 
   // Upload the add-on asset
   const uploadOperationId = await upload({
-    accessToken,
+    apiKey,
+    clientId,
     file: /** @type ReadableStream */ (
       Readable.toWeb(fs.createReadStream(addonFile))
     ),
@@ -56,7 +47,8 @@ async function main() {
 
   // Wait for the upload the be processed
   await waitForOperation({
-    accessToken,
+    apiKey,
+    clientId,
     operation: 'upload',
     operationId: uploadOperationId,
     productId,
@@ -66,14 +58,16 @@ async function main() {
 
   // Publish the new version
   const publishOperationId = await publish({
-    accessToken,
+    apiKey,
+    clientId,
     productId,
     notes: core.getInput('notes'),
   });
 
   // Wait for the publish to complete
   await waitForOperation({
-    accessToken,
+    apiKey,
+    clientId,
     operation: 'publish',
     operationId: publishOperationId,
     productId,
@@ -90,18 +84,20 @@ main().catch((error) => {
  * Uploads a file to Microsoft Edge Add-ons.
  *
  * @param {object} options
- * @param {string} options.accessToken
+ * @param {string} options.apiKey
+ * @param {string} options.clientId
  * @param {ReadableStream} options.file
  * @param {string} options.productId
  *
  * @returns {Promise<string>}
  */
-async function upload({ accessToken, file, productId }) {
+async function upload({ apiKey, clientId, file, productId }) {
   const res = await fetch(
     `${BASE_API_URL}/v1/products/${productId}/submissions/draft/package`,
     {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `ApiKey ${apiKey}`,
+        'X-ClientID': clientId,
         'Content-Type': 'application/zip',
       },
       // @ts-expect-error
@@ -127,16 +123,17 @@ async function upload({ accessToken, file, productId }) {
  * Publishes a draft submission
  *
  * @param {object} options
- * @param {string} options.accessToken
+ * @param {string} options.apiKey
+ * @param {string} options.clientId
  * @param {string} options.productId
  * @param {string | undefined} options.notes
  *
  * @returns {Promise<string>}
  */
-async function publish({ accessToken, productId, notes }) {
+async function publish({ apiKey, clientId, productId, notes }) {
   /** @type RequestInit */
   let fetchOptions = {
-    headers: { Authorization: `Bearer ${accessToken}` },
+    headers: { Authorization: `ApiKey ${apiKey}`, 'X-ClientID': clientId },
     method: 'POST',
   };
 
@@ -230,13 +227,15 @@ async function publish({ accessToken, productId, notes }) {
  * Uploads a file to Microsoft Edge Add-ons.
  *
  * @param {object} options
- * @param {string} options.accessToken
+ * @param {string} options.apiKey
+ * @param {string} options.clientId
  * @param {'upload' | 'publish'} options.operation
  * @param {string} options.operationId
  * @param {string} options.productId
  */
 async function waitForOperation({
-  accessToken,
+  apiKey,
+  clientId,
   operation,
   operationId,
   productId,
@@ -251,7 +250,7 @@ async function waitForOperation({
   while (inProgress) {
     core.info('Checking operation status...');
     const res = await fetch(operationUrl, {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: { Authorization: `ApiKey ${apiKey}`, 'X-ClientID': clientId },
     });
 
     const status = /** @type OperationStatus */ await res.json();
@@ -278,31 +277,4 @@ async function waitForOperation({
     );
     await new Promise((resolve) => setTimeout(resolve, 5000));
   }
-}
-
-/**
- * @typedef {object} GetAccessTokenOptions
- * @property {string} accessTokenUrl
- * @property {string} clientId
- * @property {string} clientSecret
- */
-
-/**
- * Fetches an access token
- *
- * @param {GetAccessTokenOptions} options
- * @returns {Promise<string>}
- */
-async function getAccessToken({ accessTokenUrl, clientId, clientSecret }) {
-  const body = new URLSearchParams({
-    client_id: clientId,
-    client_secret: clientSecret,
-    grant_type: 'client_credentials',
-    scope: `${BASE_API_URL}/.default`,
-  });
-
-  const res = await fetch(accessTokenUrl, { method: 'POST', body });
-  const data = /** @type AuthTokenResponse */ (await res.json());
-
-  return data.access_token;
 }

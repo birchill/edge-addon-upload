@@ -19067,19 +19067,13 @@ async function main() {
     throw new Error(`Asset file not found ${addonFile}`);
   }
   core.info(`Found add-on file: ${addonFile}`);
-  const accessTokenUrl = core.getInput("access_token_url", { required: true });
+  const apiKey = core.getInput("api_key", { required: true });
   const clientId = core.getInput("client_id", { required: true });
-  const clientSecret = core.getInput("client_secret", { required: true });
   const productId = core.getInput("product_id", { required: true });
-  core.info("Getting access token...");
-  const accessToken = await getAccessToken({
-    accessTokenUrl,
-    clientId,
-    clientSecret
-  });
   core.info("Uploading add-on...");
   const uploadOperationId = await upload({
-    accessToken,
+    apiKey,
+    clientId,
     file: (
       /** @type ReadableStream */
       Readable.toWeb(fs.createReadStream(addonFile))
@@ -19090,19 +19084,22 @@ async function main() {
     `Successfully uploaded add-on (operation ID: ${uploadOperationId})`
   );
   await waitForOperation({
-    accessToken,
+    apiKey,
+    clientId,
     operation: "upload",
     operationId: uploadOperationId,
     productId
   });
   core.info("Publishing new version...");
   const publishOperationId = await publish({
-    accessToken,
+    apiKey,
+    clientId,
     productId,
     notes: core.getInput("notes")
   });
   await waitForOperation({
-    accessToken,
+    apiKey,
+    clientId,
     operation: "publish",
     operationId: publishOperationId,
     productId
@@ -19112,12 +19109,13 @@ async function main() {
 main().catch((error) => {
   core.setFailed(error.message);
 });
-async function upload({ accessToken, file, productId }) {
+async function upload({ apiKey, clientId, file, productId }) {
   const res = await fetch(
     `${BASE_API_URL}/v1/products/${productId}/submissions/draft/package`,
     {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `ApiKey ${apiKey}`,
+        "X-ClientID": clientId,
         "Content-Type": "application/zip"
       },
       // @ts-expect-error
@@ -19135,9 +19133,9 @@ async function upload({ accessToken, file, productId }) {
   }
   return operationId;
 }
-async function publish({ accessToken, productId, notes }) {
+async function publish({ apiKey, clientId, productId, notes }) {
   let fetchOptions = {
-    headers: { Authorization: `Bearer ${accessToken}` },
+    headers: { Authorization: `ApiKey ${apiKey}`, "X-ClientID": clientId },
     method: "POST"
   };
   if (notes?.length) {
@@ -19158,7 +19156,8 @@ async function publish({ accessToken, productId, notes }) {
   return operationId;
 }
 async function waitForOperation({
-  accessToken,
+  apiKey,
+  clientId,
   operation,
   operationId,
   productId
@@ -19169,7 +19168,7 @@ async function waitForOperation({
   while (inProgress) {
     core.info("Checking operation status...");
     const res = await fetch(operationUrl, {
-      headers: { Authorization: `Bearer ${accessToken}` }
+      headers: { Authorization: `ApiKey ${apiKey}`, "X-ClientID": clientId }
     });
     const status = (
       /** @type OperationStatus */
@@ -19193,20 +19192,6 @@ async function waitForOperation({
     );
     await new Promise((resolve) => setTimeout(resolve, 5e3));
   }
-}
-async function getAccessToken({ accessTokenUrl, clientId, clientSecret }) {
-  const body = new URLSearchParams({
-    client_id: clientId,
-    client_secret: clientSecret,
-    grant_type: "client_credentials",
-    scope: `${BASE_API_URL}/.default`
-  });
-  const res = await fetch(accessTokenUrl, { method: "POST", body });
-  const data = (
-    /** @type AuthTokenResponse */
-    await res.json()
-  );
-  return data.access_token;
 }
 /*! Bundled license information:
 

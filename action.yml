@@ -4,17 +4,14 @@ branding:
   icon: 'upload-cloud'
   color: 'blue'
 inputs:
-  access_token_url:
-    description: The access token URL from https://partner.microsoft.com/en-us/dashboard/microsoftedge/publishapi
-    required: true
   addon_file:
     description: Path to the addon file relative to `$GITHUB_WORKSPACE`.
     required: true
-  client_id:
-    description: The client ID listed at https://partner.microsoft.com/en-us/dashboard/microsoftedge/publishapi
+  api_key:
+    description: An API key from https://partner.microsoft.com/dashboard/microsoftedge/publishapi
     required: true
-  client_secret:
-    description: A secret generated from https://partner.microsoft.com/en-us/dashboard/microsoftedge/publishapi
+  client_id:
+    description: The client ID listed at https://partner.microsoft.com/dashboard/microsoftedge/publishapi
     required: true
   product_id:
     description: The product ID listed under the "Extension identity" section of the Partner Center dashboard
