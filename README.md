@@ -14,10 +14,9 @@ See [action.yml](action.yml)
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   with:
-    access_token_url: ${{ secrets.EDGE_ACCESS_TOKEN_URL }}
     addon_file: addon.zip
+    api_key: ${{ secrets.EDGE_API_KEY }}
     client_id: ${{ secrets.EDGE_CLIENT_ID }}
-    client_secret: ${{ secrets.EDGE_CLIENT_SECRET }}
     product_id: ${{ secrets.EDGE_PRODUCT_ID }}
 ```
 
