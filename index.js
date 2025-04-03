@@ -92,20 +92,19 @@ main().catch((error) => {
  * @returns {Promise<string>}
  */
 async function upload({ apiKey, clientId, file, productId }) {
-  const res = await fetch(
-    `${BASE_API_URL}/v1/products/${productId}/submissions/draft/package`,
-    {
-      headers: {
-        Authorization: `ApiKey ${apiKey}`,
-        'X-ClientID': clientId,
-        'Content-Type': 'application/zip',
-      },
-      // @ts-expect-error
-      duplex: 'half',
-      method: 'POST',
-      body: file,
-    }
-  );
+  const uploadUrl = `${BASE_API_URL}/v1/products/${productId}/submissions/draft/package`;
+  core.debug(`Making POST request to ${uploadUrl}`);
+  const res = await fetch(uploadUrl, {
+    headers: {
+      Authorization: `ApiKey ${apiKey}`,
+      'X-ClientID': clientId,
+      'Content-Type': 'application/zip',
+    },
+    // @ts-expect-error
+    duplex: 'half',
+    method: 'POST',
+    body: file,
+  });
 
   if (res.status !== 202) {
     throw new Error(`Got status ${res.status} when uploading add-on`);
@@ -169,10 +168,9 @@ async function publish({ apiKey, clientId, productId, notes }) {
     fetchOptions.body = notes;
   }
 
-  const res = await fetch(
-    `${BASE_API_URL}/v1/products/${productId}/submissions`,
-    fetchOptions
-  );
+  const publishUrl = `${BASE_API_URL}/v1/products/${productId}/submissions`;
+  core.debug(`Making POST request to ${publishUrl}`);
+  const res = await fetch(publishUrl, fetchOptions);
 
   if (res.status !== 202) {
     throw new Error(`Got status ${res.status} when uploading add-on`);
@@ -245,6 +243,7 @@ async function waitForOperation({
     operation === 'upload'
       ? `${BASE_API_URL}/v1/products/${productId}/submissions/draft/package/operations/${operationId}`
       : `${BASE_API_URL}/v1/products/${productId}/submissions/operations/${operationId}`;
+  core.debug(`Making GET request to ${operationUrl}`);
 
   let inProgress = true;
   while (inProgress) {

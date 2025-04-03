@@ -743,7 +743,7 @@ var require_tunnel = __commonJS({
         connectOptions.headers = connectOptions.headers || {};
         connectOptions.headers["Proxy-Authorization"] = "Basic " + new Buffer(connectOptions.proxyAuth).toString("base64");
       }
-      debug("making CONNECT request");
+      debug2("making CONNECT request");
       var connectReq = self.request(connectOptions);
       connectReq.useChunkedEncodingByDefault = false;
       connectReq.once("response", onResponse);
@@ -763,7 +763,7 @@ var require_tunnel = __commonJS({
         connectReq.removeAllListeners();
         socket.removeAllListeners();
         if (res.statusCode !== 200) {
-          debug(
+          debug2(
             "tunneling socket could not be established, statusCode=%d",
             res.statusCode
           );
@@ -775,7 +775,7 @@ var require_tunnel = __commonJS({
           return;
         }
         if (head.length > 0) {
-          debug("got illegal response body from proxy");
+          debug2("got illegal response body from proxy");
           socket.destroy();
           var error = new Error("got illegal response body from proxy");
           error.code = "ECONNRESET";
@@ -783,13 +783,13 @@ var require_tunnel = __commonJS({
           self.removeSocket(placeholder);
           return;
         }
-        debug("tunneling connection has established");
+        debug2("tunneling connection has established");
         self.sockets[self.sockets.indexOf(placeholder)] = socket;
         return cb(socket);
       }
       function onError(cause) {
         connectReq.removeAllListeners();
-        debug(
+        debug2(
           "tunneling socket could not be established, cause=%s\n",
           cause.message,
           cause.stack
@@ -851,9 +851,9 @@ var require_tunnel = __commonJS({
       }
       return target;
     }
-    var debug;
+    var debug2;
     if (process.env.NODE_DEBUG && /\btunnel\b/.test(process.env.NODE_DEBUG)) {
-      debug = function() {
+      debug2 = function() {
         var args = Array.prototype.slice.call(arguments);
         if (typeof args[0] === "string") {
           args[0] = "TUNNEL: " + args[0];
@@ -863,10 +863,10 @@ var require_tunnel = __commonJS({
         console.error.apply(console, args);
       };
     } else {
-      debug = function() {
+      debug2 = function() {
       };
     }
-    exports.debug = debug;
+    exports.debug = debug2;
   }
 });
 
@@ -18968,10 +18968,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       return process.env["RUNNER_DEBUG"] === "1";
     }
     exports.isDebug = isDebug;
-    function debug(message) {
+    function debug2(message) {
       command_1.issueCommand("debug", {}, message);
     }
-    exports.debug = debug;
+    exports.debug = debug2;
     function error(message, properties = {}) {
       command_1.issueCommand("error", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
@@ -19110,20 +19110,19 @@ main().catch((error) => {
   core.setFailed(error.message);
 });
 async function upload({ apiKey, clientId, file, productId }) {
-  const res = await fetch(
-    `${BASE_API_URL}/v1/products/${productId}/submissions/draft/package`,
-    {
-      headers: {
-        Authorization: `ApiKey ${apiKey}`,
-        "X-ClientID": clientId,
-        "Content-Type": "application/zip"
-      },
-      // @ts-expect-error
-      duplex: "half",
-      method: "POST",
-      body: file
-    }
-  );
+  const uploadUrl = `${BASE_API_URL}/v1/products/${productId}/submissions/draft/package`;
+  core.debug(`Making POST request to ${uploadUrl}`);
+  const res = await fetch(uploadUrl, {
+    headers: {
+      Authorization: `ApiKey ${apiKey}`,
+      "X-ClientID": clientId,
+      "Content-Type": "application/zip"
+    },
+    // @ts-expect-error
+    duplex: "half",
+    method: "POST",
+    body: file
+  });
   if (res.status !== 202) {
     throw new Error(`Got status ${res.status} when uploading add-on`);
   }
@@ -19142,10 +19141,9 @@ async function publish({ apiKey, clientId, productId, notes }) {
     fetchOptions.headers["Content-Type"] = "text/plain";
     fetchOptions.body = notes;
   }
-  const res = await fetch(
-    `${BASE_API_URL}/v1/products/${productId}/submissions`,
-    fetchOptions
-  );
+  const publishUrl = `${BASE_API_URL}/v1/products/${productId}/submissions`;
+  core.debug(`Making POST request to ${publishUrl}`);
+  const res = await fetch(publishUrl, fetchOptions);
   if (res.status !== 202) {
     throw new Error(`Got status ${res.status} when uploading add-on`);
   }
@@ -19164,6 +19162,7 @@ async function waitForOperation({
 }) {
   const startTime = Date.now();
   const operationUrl = operation === "upload" ? `${BASE_API_URL}/v1/products/${productId}/submissions/draft/package/operations/${operationId}` : `${BASE_API_URL}/v1/products/${productId}/submissions/operations/${operationId}`;
+  core.debug(`Making GET request to ${operationUrl}`);
   let inProgress = true;
   while (inProgress) {
     core.info("Checking operation status...");
