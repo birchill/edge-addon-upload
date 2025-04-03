@@ -25,7 +25,7 @@
     "format": "prettier --write index.js",
     "format-check": "prettier --check index.js",
     "package": "esbuild index.js --outfile=dist/index.js --bundle --platform=node --target=node20 --format=esm --banner:js=\"import {createRequire} from 'module'; const require=createRequire(import.meta.url);\"",
-    "all": "yarn build && yarn format && yarn package",
+    "all": "pnpm build && pnpm format && pnpm package",
     "postinstall": "husky install"
   }
 }
